@@ -1,0 +1,25 @@
+---
+- name: 'Add Docker key'
+  register: 'docker_key'
+  apt_key:
+    url: 'https://download.docker.com/linux/ubuntu/gpg'
+
+- name: 'Add Docker repo'
+  register: 'docker_repo'
+  apt_repository:
+    repo: 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable'
+
+- name: 'Update Apt cache'
+  when: 'docker_key|changed or docker_repo|changed'
+  apt:
+    update_cache: true
+
+- name: 'Install Docker'
+  apt:
+    pkg: 'docker-ce'
+    state: 'present'
+
+- name: 'Install Python Docker package'
+  pip:
+    name: 'docker-py'
+    state: 'present'

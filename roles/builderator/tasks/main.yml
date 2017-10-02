@@ -1,0 +1,32 @@
+---
+- name: 'Create Builderator user'
+  user:
+    name: 'builderator'
+    groups: 'docker'
+    generate_ssh_key: true
+    state: 'present'
+
+- name: 'Add Builderator authorized key'
+  copy:
+    remote_src: true
+    src: '/home/builderator/.ssh/id_rsa.pub'
+    dest: '/home/builderator/.ssh/authorized_keys'
+    owner: 'builderator'
+    group: 'builderator'
+    mode: 0400
+
+- name: 'Create Builderator directory'
+  file:
+    path: '/var/local/builderator'
+    owner: 'builderator'
+    group: 'builderator'
+    state: 'directory'
+
+- name: 'Install Builderator'
+  copy:
+    src: 'builderator'
+    dest: '/usr/local/bin/builderator'
+    owner: 'root'
+    group: 'root'
+    mode: 0755
+

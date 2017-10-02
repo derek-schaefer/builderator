@@ -1,0 +1,19 @@
+---
+- name: 'Update Apt cache'
+  apt:
+    update_cache: true
+
+- name: 'Install Python library'
+  apt:
+    pkg: 'python3-dev'
+    state: 'present'
+
+- name: 'Install Python package manager'
+  apt:
+    pkg: 'python3-pip'
+    state: 'present'
+
+- name: 'Install Git'
+  apt:
+    pkg: 'git'
+    state: 'present'

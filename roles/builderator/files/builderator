@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -e
+
+NAME=$(basename $0)
+
+if [ "$#" -lt 3 ]; then
+  echo "Usage: $NAME repository commit image [command] [arguments...]"
+  exit 1
+fi
+
+REPOSITORY=$1
+COMMIT=$2
+IMAGE=$3
+COMMAND=$4
+ARGUMENTS=(${@:5})
+
+IDENTIFIER=$(echo -n $REPOSITORY | md5sum | awk '{ print $1 }')
+DIRECTORY=/var/local/$NAME/repositories/$IDENTIFIER
+KEY=$NAME:$IDENTIFIER
+
+while [ $(redis-cli --raw setnx $KEY:lock $$) -eq 0 ]; do sleep 1; done
+
+trap "redis-cli del $KEY:lock > /dev/null" EXIT
+
+mkdir -p $DIRECTORY
+
+pushd $DIRECTORY > /dev/null
+
+if [ -d ".git" ]; then
+  git fetch -q origin
+else
+  git clone -q $REPOSITORY .
+fi
+
+git checkout -q -f $COMMIT
+
+docker pull $IMAGE
+
+docker run -i --rm --name $IDENTIFIER \
+  -w /opt/$NAME \
+  -v $DIRECTORY:/opt/$NAME:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  $IMAGE $COMMAND ${ARGUMENTS[@]}
+
+docker image prune --force
+
+popd > /dev/null
