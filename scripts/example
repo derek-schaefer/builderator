@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-rm -f builderator.key
-
 ssh -i $(pwd)/.vagrant/machines/default/virtualbox/private_key -p 2222 ubuntu@127.0.0.1 'sudo cat /home/builderator/.ssh/id_rsa' > builderator.key
 
 chmod 400 builderator.key
@@ -10,3 +8,5 @@ ssh -i $(pwd)/builderator.key -p 2222 builderator@127.0.0.1 \
   "builderator 'https://github.com/derek-schaefer/circleci-docker-example.git' 6695f1c6fde468a944862d0bb022631440da873e docker:latest 'docker build -t circleci-docker-example:latest .'"
 
 echo $?
+
+rm -f builderator.key
